@@ -1,0 +1,790 @@
+package com.iphayao.linebot;
+
+
+import java.io.BufferedReader;
+import java.io.BufferedWriter;
+import java.io.IOException;
+import java.io.InputStreamReader;
+import java.io.OutputStream;
+import java.io.OutputStreamWriter;
+import java.net.HttpURLConnection;
+import java.net.MalformedURLException;
+import java.net.URL;
+import java.nio.charset.StandardCharsets;
+import java.util.ArrayList;
+import java.util.logging.Logger;
+
+import javax.ws.rs.core.MediaType;
+import javax.ws.rs.core.MultivaluedMap;
+import javax.ws.rs.core.UriBuilder;
+
+
+
+
+
+
+
+//throws ClientProtocolException, IOException
+import com.sun.jersey.core.util.MultivaluedMapImpl;
+import com.sun.jersey.json.impl.provider.entity.JSONRootElementProvider;
+
+
+import java.io.IOException;
+import javax.ws.rs.core.MediaType;
+import javax.ws.rs.core.UriBuilder;
+import org.apache.http.client.ClientProtocolException;
+import org.codehaus.jettison.json.JSONObject;
+
+import com.iphayao.linebot.*;
+
+
+public class Callrest {
+	//LineRet lineret;
+	Configs config=new Configs();
+	String web=config.getWeb(); 
+	String onlineorder=config.getOnlineOrder();
+	String orderstatus=config.getOrderStatus();
+	String productprice=config.getProductPrice();
+	String checkbalance=config.getCheckBalance();
+	String payment=config.getPayment();
+	String paymentbarcode=config.getPaymentBarCode();
+	String paymentqrcode=config.getPaymentQrCode();
+	String contact=config.getContact();
+	String tokenlogin=config.getTokenLogin();
+	String token=config.getToken();
+	String checkid=config.getCheckID();
+	String cvname=config.getCVName();
+	
+    public void getCV(String Userid)throws ClientProtocolException, IOException {
+    	 // Create a Logger 
+        Logger logger 
+            = Logger.getLogger( 
+            		Callrest.class.getName()+"Method : getCV  Userid = "+Userid); 
+
+       // "http://localhost:8082/rest/prsorderservice/v1/Post"
+    	try {
+    		System.out.println("Call Rest : Satrt ");
+//    		  final String POST_PARAMS = "{\n" + "\"userId\": 101,\r\n" +
+//    			        "    \"id\": 101,\r\n" +
+//    			        "    \"title\": \"Test Title\",\r\n" +
+//    			        "    \"body\": \"Test Body\"" + "\n}";
+    		 //URL url = new URL("http://localhost:8082/rest/prsorderservice/v1/Post");
+    		// https://petstore.swagger.io/v2/pet/findByStatus?status=available
+    		
+    		 URL obj = new URL(web+"rest/prsorderservice/v1/test");
+    		 
+    		// URL obj = new URL("http://localhost:8082/rest/prsorderservice/v1/Post");
+    		    HttpURLConnection postConnection = (HttpURLConnection) obj.openConnection();
+    		    postConnection.setRequestMethod("POST");
+    		  
+    		   postConnection.setRequestProperty("Content-Type", "application/json");
+    		   postConnection.setDoOutput(true);
+    		   postConnection.setConnectTimeout(10000);
+    		   // postConnection.setRequestProperty("OrderID","1");
+    		   //////////////////////////////
+//    		 URL obj = new URL("https://petstore.swagger.io/v2/pet/findByStatus?status=available");
+//    		 HttpURLConnection postConnection = (HttpURLConnection) obj.openConnection();
+//    		 postConnection.setRequestMethod("GET");
+//    		 postConnection.setRequestProperty("Content-Type", "application/json");
+//    		 postConnection.setDoOutput(true);
+//    		 postConnection.setConnectTimeout(10000);
+    		   
+    		   System.out.println("Call Rest : postConnection "+postConnection.getResponseCode());
+
+    			if (postConnection.getResponseCode()!=200&&postConnection.getResponseCode() != HttpURLConnection.HTTP_CREATED) {
+    				throw new RuntimeException("Failed : HTTP error code : "
+    					+ postConnection.getResponseCode());
+    			}
+
+    			BufferedReader br = new BufferedReader(new InputStreamReader(
+    					(postConnection.getInputStream()),"UTF8"));
+
+    			String output;
+    			System.out.println("Output from Server .... \n");
+    			while ((output = br.readLine()) != null) {
+    				System.out.println(output);
+    			}
+
+    			postConnection.disconnect();
+    		   
+    		   
+    		   
+    		   
+    		   
+    		   //////////////////////////
+    		   // postConnection.connect();
+//    		    System.out.println("Call Rest : OS ");
+//    		    OutputStream os = postConnection.getOutputStream();
+//    		    os.write(POST_PARAMS.getBytes());
+//    		    os.flush();
+//    		    os.close();
+//    		    int responseCode = postConnection.getResponseCode();
+//    		    System.out.println("Call Rest : responseCode ");
+//    		    System.out.println("POST Response Code :  " + responseCode);
+//    		    System.out.println("POST Response Message : " + postConnection.getResponseMessage());
+//    		    if (responseCode == HttpURLConnection.HTTP_CREATED) { //success
+//    		        BufferedReader in = new BufferedReader(new InputStreamReader(
+//    		            postConnection.getInputStream()));
+//    		        String inputLine;
+//    		        StringBuffer response = new StringBuffer();
+//    		        while ((inputLine = in .readLine()) != null) {
+//    		            response.append(inputLine);
+//    		        } in .close();
+//    		        // print result
+//    		        System.out.println(response.toString());
+//    		    } else {
+//    		        System.out.println("POST NOT WORKED");
+//    		    }
+//       	  
+       	  
+    	}catch(Exception e) {
+    		
+    		logger.info("Error "+e.toString());
+    		
+    	}
+    	
+    	//return "x";
+    	
+    } 
+    	
+    public String getOnlineOrder(String Userid)  throws ClientProtocolException, IOException  {
+    	 // Create a Logger 
+        Logger logger 
+            = Logger.getLogger( 
+            		Callrest.class.getName()+"Method : getOnlineOrder Userid = "+Userid); 
+    	//http://localhost:8082/rest/linerestonlineorder/v1/LineRestOnlineOrder/
+        String Data="";
+        try {
+        	//http://localhost:8082/rest/linerestonlineorder/v1/OnlineOrder
+    	URL obj = new URL(web+onlineorder);
+        	//URL obj = new URL("http://localhost:8082/rest/linerestonlineorder/v1/OnlineOrder");
+      	 
+      	 HttpURLConnection postConnection = (HttpURLConnection) obj.openConnection();
+   		    postConnection.setRequestMethod("POST");
+   		  
+   		   postConnection.setRequestProperty("Content-Type", "application/json");
+   		   postConnection.setDoOutput(true);
+   		   postConnection.setConnectTimeout(10000);
+   		   
+   		OutputStream os = postConnection.getOutputStream();
+        BufferedWriter writer = new BufferedWriter(
+                new OutputStreamWriter(os, "UTF-8"));
+        writer.write(Userid);
+
+        writer.flush();
+        writer.close();
+        os.close();
+   		   
+   		   
+   		   System.out.println("Call Rest : postConnection "+postConnection.getResponseCode());
+
+   			if (postConnection.getResponseCode()!=200&&postConnection.getResponseCode() != HttpURLConnection.HTTP_CREATED) {
+   				throw new RuntimeException("Failed : HTTP error code : "
+   					+ postConnection.getResponseCode());
+   			}
+
+   			BufferedReader br = new BufferedReader(new InputStreamReader(
+   					(postConnection.getInputStream()),"UTF8"));
+
+   			String output;
+   			
+   			System.out.println("Output from Server .... \n");
+   			while ((output = br.readLine()) != null) {
+   				Data+=output;
+   				System.out.println(output);
+   			}
+
+   			postConnection.disconnect();
+       	
+    		}catch(Exception e) {
+      		
+      		logger.info("Error "+e.toString());
+      		
+     	 }       	
+        return Data;
+       	
+    }
+    
+    public String getOrderStatus(String Userid) throws ClientProtocolException, IOException  {
+    	 // Create a Logger 
+        Logger logger 
+            = Logger.getLogger( 
+            		Callrest.class.getName()+"Method : getOrderStatus Userid = "+Userid); 
+    	//////
+        String Data="";
+        try {
+    	URL obj = new URL(web+orderstatus);
+     	 
+     	 HttpURLConnection postConnection = (HttpURLConnection) obj.openConnection();
+  		    postConnection.setRequestMethod("POST");
+  		  
+  		   postConnection.setRequestProperty("Content-Type", "application/json");
+  		   postConnection.setDoOutput(true);
+  		   postConnection.setConnectTimeout(10000);
+  		   
+  		 OutputStream os = postConnection.getOutputStream();
+         BufferedWriter writer = new BufferedWriter(
+                 new OutputStreamWriter(os, "UTF-8"));
+         writer.write(Userid);
+
+         writer.flush();
+         writer.close();
+         os.close();
+  		   
+  		   
+  		   System.out.println("Call Rest : postConnection "+postConnection.getResponseCode());
+
+  			if (postConnection.getResponseCode()!=200&&postConnection.getResponseCode() != HttpURLConnection.HTTP_CREATED) {
+  				throw new RuntimeException("Failed : HTTP error code : "
+  					+ postConnection.getResponseCode());
+  			}
+
+  			BufferedReader br = new BufferedReader(new InputStreamReader(
+  					(postConnection.getInputStream()),"UTF8"));
+
+  			String output;
+  			
+  			System.out.println("Output from Server .... \n");
+  			while ((output = br.readLine()) != null) {
+  				Data+=output;
+  				System.out.println(output);
+  			}
+
+  			postConnection.disconnect();
+      
+    		}catch(Exception e) {
+      		
+      		logger.info("Error "+e.toString());
+      		
+     	 }    
+    	return Data;
+    }
+    public String getProductPrice(String Userid) throws ClientProtocolException, IOException {
+    	 // Create a Logger 
+        Logger logger 
+            = Logger.getLogger( 
+            		Callrest.class.getName()+"Method : getProductPrice  Userid = "+Userid); 
+    	//lineret=new LineRet();
+        String Data="";
+        try {
+    	 URL obj = new URL(web+productprice);
+    	 
+    	 HttpURLConnection postConnection = (HttpURLConnection) obj.openConnection();
+		    postConnection.setRequestMethod("POST");
+		  
+		   postConnection.setRequestProperty("Content-Type", "application/json");
+		   postConnection.setDoOutput(true);
+		   postConnection.setConnectTimeout(10000);
+		   
+		   OutputStream os = postConnection.getOutputStream();
+	         BufferedWriter writer = new BufferedWriter(
+	                 new OutputStreamWriter(os, "UTF-8"));
+	         writer.write(Userid);
+
+	         writer.flush();
+	         writer.close();
+	         os.close();
+		   
+		   System.out.println("Call Rest : postConnection "+postConnection.getResponseCode());
+
+			if (postConnection.getResponseCode()!=200&&postConnection.getResponseCode() != HttpURLConnection.HTTP_CREATED) {
+				throw new RuntimeException("Failed : HTTP error code : "
+					+ postConnection.getResponseCode());
+			}
+
+			BufferedReader br = new BufferedReader(new InputStreamReader(
+					(postConnection.getInputStream()),"UTF8"));
+
+			String output;
+			
+			System.out.println("Output from Server .... \n");
+			while ((output = br.readLine()) != null) {
+				Data+=output;
+				System.out.println(output);
+			}
+			
+			
+
+			postConnection.disconnect();
+			//System.out.println(Data);
+			//System.out.println("Userid"+Userid);
+//			int retResult_start = 14;
+//	        int retResult_end =Data.indexOf(",",14);
+	      //  System.out.println(retResult_end);
+//	        String retResult =Data.substring(retResult_start,retResult_end-1);
+	        
+	        
+    	
+    	
+    		}catch(Exception e) {
+      		
+      		logger.info("Error "+e.toString());
+      		
+     	 }
+        return Data;
+    }
+    public String getCheckBalance(String Userid)throws ClientProtocolException, IOException {
+    	Logger logger 
+        = Logger.getLogger( 
+        		Callrest.class.getName()+"Method : getCheckBalance  Userid = "+Userid);
+    	String Data="";
+    	try {
+    	URL obj = new URL(web+checkbalance);
+   	 
+   	 HttpURLConnection postConnection = (HttpURLConnection) obj.openConnection();
+		    postConnection.setRequestMethod("POST");
+		  
+		   postConnection.setRequestProperty("Content-Type", "application/json");
+		   postConnection.setDoOutput(true);
+		   postConnection.setConnectTimeout(10000);
+		   
+		   OutputStream os = postConnection.getOutputStream();
+	         BufferedWriter writer = new BufferedWriter(
+	                 new OutputStreamWriter(os, "UTF-8"));
+	         writer.write(Userid);
+
+	         writer.flush();
+	         writer.close();
+	         os.close();
+		   
+		   
+		   System.out.println("Call Rest : postConnection "+postConnection.getResponseCode());
+
+			if (postConnection.getResponseCode()!=200&&postConnection.getResponseCode() != HttpURLConnection.HTTP_CREATED) {
+				throw new RuntimeException("Failed : HTTP error code : "
+					+ postConnection.getResponseCode());
+			}
+
+			BufferedReader br = new BufferedReader(new InputStreamReader(
+					(postConnection.getInputStream()),"UTF8"));
+
+			String output;
+			
+			System.out.println("Output from Server .... \n");
+			while ((output = br.readLine()) != null) {
+				Data+=output;
+				System.out.println(output);
+			}
+
+			postConnection.disconnect();
+    	
+    		}catch(Exception e) {
+      		
+      		logger.info("Error "+e.toString());
+      		
+     	 }    
+    	return Data;
+    }
+    
+    public String getPaymentFileId(String Userid,int type) throws ClientProtocolException, IOException  {
+    	String type_="";
+    	if(type==1)type_="BarCode";
+    	else type_="QrCode";
+    	
+    	Logger logger 
+        = Logger.getLogger( 
+        		Callrest.class.getName()+"Method : getPayment  Userid = "+Userid+" ,type = "+type_);
+    	String Data="";
+    	try {
+    	URL obj=null;
+    	
+    	if(type==1)obj = new URL(web+paymentbarcode);
+    	else obj = new URL(web+paymentqrcode);
+    	 
+     	 
+     	 HttpURLConnection postConnection = (HttpURLConnection) obj.openConnection();
+  		    postConnection.setRequestMethod("POST");
+  		  
+  		   postConnection.setRequestProperty("Content-Type", "application/json");
+  		   postConnection.setDoOutput(true);
+  		   postConnection.setConnectTimeout(10000);
+  		   
+  		   
+  		 OutputStream os = postConnection.getOutputStream();
+         BufferedWriter writer = new BufferedWriter(
+                 new OutputStreamWriter(os, "UTF-8"));
+         writer.write(Userid);
+
+         writer.flush();
+         writer.close();
+         os.close();
+  		   
+  		   
+  		   System.out.println("Call Rest : postConnection "+postConnection.getResponseCode());
+
+  			if (postConnection.getResponseCode()!=200&&postConnection.getResponseCode() != HttpURLConnection.HTTP_CREATED) {
+  				throw new RuntimeException("Failed : HTTP error code : "
+  					+ postConnection.getResponseCode());
+  			}
+
+  			BufferedReader br = new BufferedReader(new InputStreamReader(
+  					(postConnection.getInputStream()),"UTF8"));
+
+  			String output;
+  			
+  			System.out.println("Output from Server .... \n");
+  			while ((output = br.readLine()) != null) {
+  				Data+=output;
+  				System.out.println(output);
+  			}
+
+  			postConnection.disconnect();
+      	
+    		}catch(Exception e) {
+      		
+      		logger.info("Error "+e.toString());
+      		
+     	 }
+    	return Data;
+    }
+    
+    
+    
+    
+    public String getContact(String Userid) throws ClientProtocolException, IOException  {
+    	
+    	Logger logger 
+        = Logger.getLogger( 
+        		Callrest.class.getName()+"Method : getContact  Userid = "+Userid);
+    	String Data="";
+    	try {
+    	URL obj = new URL(web+contact);
+     	 
+     	 HttpURLConnection postConnection = (HttpURLConnection) obj.openConnection();
+  		    postConnection.setRequestMethod("POST");
+  		  
+  		   postConnection.setRequestProperty("Content-Type", "application/json");
+  		   postConnection.setDoOutput(true);
+  		   postConnection.setConnectTimeout(10000);
+  		   
+  		 OutputStream os = postConnection.getOutputStream();
+         BufferedWriter writer = new BufferedWriter(
+                 new OutputStreamWriter(os, "UTF-8"));
+         writer.write(Userid);
+
+         writer.flush();
+         writer.close();
+         os.close();
+  		   
+  		   
+  		   System.out.println("Call Rest : postConnection "+postConnection.getResponseCode());
+
+  			if (postConnection.getResponseCode()!=200&&postConnection.getResponseCode() != HttpURLConnection.HTTP_CREATED) {
+  				throw new RuntimeException("Failed : HTTP error code : "
+  					+ postConnection.getResponseCode());
+  			}
+
+  			BufferedReader br = new BufferedReader(new InputStreamReader(
+  					(postConnection.getInputStream()),"UTF8"));
+
+  			String output;
+  			
+  			System.out.println("Output from Server .... \n");
+  			while ((output = br.readLine()) != null) {
+  				Data+=output;
+  				System.out.println(output);
+  			}
+
+  			postConnection.disconnect();
+      	
+    	}catch(Exception e) {
+      		
+      		logger.info("Error "+e.toString());
+      		
+     	 }
+    	return Data;
+    }
+    
+     public String getTokenLogin(String Userid)throws ClientProtocolException, IOException {
+    	 
+    	 Logger logger 
+         = Logger.getLogger( 
+         		Callrest.class.getName()+"Method : getTokenLogin  Userid = "+Userid);
+    	 String Data="";
+    	 try {
+    	 	URL obj = new URL(web+tokenlogin);
+     	 
+     	 HttpURLConnection postConnection = (HttpURLConnection) obj.openConnection();
+  		    postConnection.setRequestMethod("POST");
+  		  
+  		   postConnection.setRequestProperty("Content-Type", "application/json");
+  		   postConnection.setDoOutput(true);
+  		   postConnection.setConnectTimeout(10000);
+  		   
+  		 OutputStream os = postConnection.getOutputStream();
+         BufferedWriter writer = new BufferedWriter(
+                 new OutputStreamWriter(os, "UTF-8"));
+         writer.write(Userid);
+
+         writer.flush();
+         writer.close();
+         os.close();
+  		   
+  		   
+  		   System.out.println("Call Rest : postConnection "+postConnection.getResponseCode());
+
+  			if (postConnection.getResponseCode()!=200&&postConnection.getResponseCode() != HttpURLConnection.HTTP_CREATED) {
+  				throw new RuntimeException("Failed : HTTP error code : "
+  					+ postConnection.getResponseCode());
+  			}
+
+  			BufferedReader br = new BufferedReader(new InputStreamReader(
+  					(postConnection.getInputStream()),"UTF8"));
+
+  			String output;
+  			
+  			System.out.println("Output from Server .... \n");
+  			while ((output = br.readLine()) != null) {
+  				Data+=output;
+  				System.out.println(output);
+  			}
+
+  			postConnection.disconnect();
+      	
+    	 }catch(Exception e) {
+       		
+       		logger.info("Error "+e.toString());
+       		
+      	 }
+    	 return Data;
+     }
+     
+public String getToken(String Userid)throws ClientProtocolException, IOException {
+    	 
+    	 Logger logger 
+         = Logger.getLogger( 
+         		Callrest.class.getName()+"Method : getToken  Userid = "+Userid);
+    	 String Data="";
+    	 try {
+    	 	URL obj = new URL(web+token);
+     	 
+     	 HttpURLConnection postConnection = (HttpURLConnection) obj.openConnection();
+  		    postConnection.setRequestMethod("POST");
+  		  
+  		   postConnection.setRequestProperty("Content-Type", "application/json");
+  		   postConnection.setDoOutput(true);
+  		   postConnection.setConnectTimeout(10000);
+  		   
+  		 OutputStream os = postConnection.getOutputStream();
+         BufferedWriter writer = new BufferedWriter(
+                 new OutputStreamWriter(os, "UTF-8"));
+         writer.write(Userid);
+
+         writer.flush();
+         writer.close();
+         os.close();
+  		   
+  		   
+  		   System.out.println("Call Rest : postConnection "+postConnection.getResponseCode());
+
+  			if (postConnection.getResponseCode()!=200&&postConnection.getResponseCode() != HttpURLConnection.HTTP_CREATED) {
+  				throw new RuntimeException("Failed : HTTP error code : "
+  					+ postConnection.getResponseCode());
+  			}
+
+  			BufferedReader br = new BufferedReader(new InputStreamReader(
+  					(postConnection.getInputStream()),"UTF8"));
+
+  			String output;
+  			
+  			System.out.println("Output from Server .... \n");
+  			while ((output = br.readLine()) != null) {
+  				Data+=output;
+  				System.out.println(output);
+  			}
+
+  			postConnection.disconnect();
+      	
+    	 }catch(Exception e) {
+       		
+       		logger.info("Error "+e.toString());
+       		
+      	 }
+    	 return Data;
+     }
+     
+     
+     public String getCheckID(String Userid)throws ClientProtocolException, IOException {
+    	 
+    	 Logger logger 
+         = Logger.getLogger( 
+         		Callrest.class.getName()+"Method : getCheckID  Userid = "+Userid);
+    	 String Data="";
+    	 try {
+ 	 	URL obj = new URL(web+checkid);
+  	 
+  	 HttpURLConnection postConnection = (HttpURLConnection) obj.openConnection();
+		    postConnection.setRequestMethod("POST");
+		  
+		   postConnection.setRequestProperty("Content-Type", "application/json");
+		   postConnection.setDoOutput(true);
+		   postConnection.setConnectTimeout(10000);
+		   
+		   OutputStream os = postConnection.getOutputStream();
+	         BufferedWriter writer = new BufferedWriter(
+	                 new OutputStreamWriter(os, "UTF-8"));
+	         writer.write(Userid);
+
+	         writer.flush();
+	         writer.close();
+	         os.close();
+		   
+		   
+		   System.out.println("Call Rest : postConnection "+postConnection.getResponseCode());
+
+			if (postConnection.getResponseCode()!=200&&postConnection.getResponseCode() != HttpURLConnection.HTTP_CREATED) {
+				throw new RuntimeException("Failed : HTTP error code : "
+					+ postConnection.getResponseCode());
+			}
+
+			BufferedReader br = new BufferedReader(new InputStreamReader(
+					(postConnection.getInputStream()),"UTF8"));
+
+			String output;
+			
+			System.out.println("Output from Server .... \n");
+			while ((output = br.readLine()) != null) {
+				Data+=output;
+				System.out.println(output);
+			}
+
+			postConnection.disconnect();
+   
+    	 }catch(Exception e) {
+      		
+      		logger.info("Error "+e.toString());
+      		
+     	 }
+    		return Data;
+  }
+     
+public String getCVName(String Userid)throws ClientProtocolException, IOException {
+    	 
+    	 Logger logger 
+         = Logger.getLogger( 
+         		Callrest.class.getName()+"Method : getCVName  Userid = "+Userid);
+    	 String Data="";
+    	 try {
+ 	 	URL obj = new URL(web+cvname);
+  	 
+  	 HttpURLConnection postConnection = (HttpURLConnection) obj.openConnection();
+		    postConnection.setRequestMethod("POST");
+		  
+		   postConnection.setRequestProperty("Content-Type", "application/json");
+		   postConnection.setDoOutput(true);
+		   postConnection.setConnectTimeout(10000);
+		   
+		   OutputStream os = postConnection.getOutputStream();
+	         BufferedWriter writer = new BufferedWriter(
+	                 new OutputStreamWriter(os, "UTF-8"));
+	         writer.write(Userid);
+
+	         writer.flush();
+	         writer.close();
+	         os.close();
+		   
+		   
+		   System.out.println("Call Rest : postConnection "+postConnection.getResponseCode());
+
+			if (postConnection.getResponseCode()!=200&&postConnection.getResponseCode() != HttpURLConnection.HTTP_CREATED) {
+				throw new RuntimeException("Failed : HTTP error code : "
+					+ postConnection.getResponseCode());
+			}
+
+			BufferedReader br = new BufferedReader(new InputStreamReader(
+					(postConnection.getInputStream()),"UTF8"));
+
+			String output;
+			
+			System.out.println("Output from Server .... \n");
+			while ((output = br.readLine()) != null) {
+				Data+=output;
+				System.out.println(output);
+			}
+
+			postConnection.disconnect();
+   
+    	 }catch(Exception e) {
+      		
+      		logger.info("Error "+e.toString());
+      		
+     	 }
+    		return Data;
+  }
+     
+     public String getTest(String Userid) throws ClientProtocolException, IOException  {
+    	 
+    	 Logger logger 
+         = Logger.getLogger( 
+         		Callrest.class.getName()+"Method : getTest  Userid = "+Userid);
+    	 String Data="";
+    	 try {
+     	URL obj = new URL(web+"rest/myservice/v1/resource");
+      	 
+      	 HttpURLConnection postConnection = (HttpURLConnection) obj.openConnection();
+   		    postConnection.setRequestMethod("POST");
+   		  
+   		   postConnection.setRequestProperty("Content-Type", "application/json");
+   		   postConnection.setDoOutput(true);
+   		   postConnection.setConnectTimeout(10000);
+   		   
+   		OutputStream os = postConnection.getOutputStream();
+        BufferedWriter writer = new BufferedWriter(
+                new OutputStreamWriter(os, "UTF-8"));
+        writer.write(Userid);
+
+        writer.flush();
+        writer.close();
+        os.close();
+   		   
+   		   
+   		   System.out.println("Call Rest : postConnection "+postConnection.getResponseCode());
+
+   			if (postConnection.getResponseCode()!=200&&postConnection.getResponseCode() != HttpURLConnection.HTTP_CREATED) {
+   				throw new RuntimeException("Failed : HTTP error code : "
+   					+ postConnection.getResponseCode());
+   			}
+
+   			BufferedReader br = new BufferedReader(new InputStreamReader(
+   					(postConnection.getInputStream()),"UTF8"));
+
+   			String output;
+         //  ArrayList<String> a=new ArrayList<String>();
+   			System.out.println("Output from Server .... \n");
+   			while ((output = br.readLine()) != null) {
+   				Data+=output;
+   				System.out.println(output);
+   			//	a.add(output);
+   			}
+
+   			postConnection.disconnect();
+   		  String s="<?xml version='1.0' encoding='utf-8'?><Data_s><Data_><Detail>1</Detail><FileID>1</FileID></Data_><Data_><Detail>2</Detail><FileID>2</FileID></Data_><Da"
+   				+"ta_><Detail>3</Detail><FileID>3</FileID></Data_><Data_><Detail>4</Detail><FileID>4</FileID></Data_><Data_><Detail>5</Detail><FileID>5</FileID></Data_><"
+   				+"Data_><Detail>6</Detail><FileID>6</FileID></Data_><Data_><Detail>7</Detail><FileID>7</FileID></Data_><Data_><Detail>8</Detail><FileID>8</FileID></Data_"
+   				+"><Data_><Detail>9</Detail><FileID>9</FileID></Data_><Data_><Detail>10</Detail><FileID>10</FileID></Data_></Data_s>";
+   			
+    	 
+//   			for(String x:a) {
+//   				System.out.println(x);
+//   				
+//   			}
+    	 
+    	// JSONObject obj = new JSONObject();
+    	 
+    	// String Data="";
+    	 
+       	
+    	 }catch(Exception e) {
+     		
+     		logger.info("Error "+e.toString());
+     		
+    	 }
+    	 return Data;
+     }
+    
+    
+}
+
+
+
+

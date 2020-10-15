@@ -1,0 +1,605 @@
+package com.iphayao.linebot;
+
+import com.iphayao.linebot.Configs;
+import com.cpfit.line.flex.*;
+import com.linecorp.bot.client.LineMessagingClient;
+import com.linecorp.bot.model.ReplyMessage;
+import com.linecorp.bot.model.action.CameraAction;
+import com.linecorp.bot.model.action.CameraRollAction;
+import com.linecorp.bot.model.action.LocationAction;
+import com.linecorp.bot.model.event.Event;
+import com.linecorp.bot.model.event.FollowEvent;
+import com.linecorp.bot.model.event.MessageEvent;
+import com.linecorp.bot.model.event.UnfollowEvent;
+import com.linecorp.bot.model.event.message.*;
+import com.linecorp.bot.model.event.message.LocationMessageContent;
+import com.linecorp.bot.model.event.message.StickerMessageContent;
+import com.linecorp.bot.model.event.message.TextMessageContent;
+import com.linecorp.bot.model.message.FlexMessage;
+import com.linecorp.bot.model.message.LocationMessage;
+import com.linecorp.bot.model.message.Message;
+import com.linecorp.bot.model.message.StickerMessage;
+import com.linecorp.bot.model.message.TextMessage;
+import com.linecorp.bot.model.message.quickreply.QuickReply;
+import com.linecorp.bot.model.message.quickreply.QuickReply.QuickReplyBuilder;
+import com.linecorp.bot.model.message.quickreply.QuickReplyItem;
+import com.linecorp.bot.model.response.BotApiResponse;
+import com.linecorp.bot.spring.boot.annotation.EventMapping;
+import com.linecorp.bot.spring.boot.annotation.LineMessageHandler;
+import org.json.simple.JSONObject;
+import org.json.simple.JSONArray;
+import org.json.simple.parser.ParseException;
+import org.json.simple.parser.JSONParser;
+import java.util.LinkedHashMap; 
+import java.util.Map; 
+//import com.mendix.core.Core;
+
+import lombok.NonNull;
+import lombok.extern.slf4j.Slf4j;
+
+import org.apache.http.client.ClientProtocolException;
+import org.springframework.beans.factory.annotation.Autowired;
+
+import java.io.IOException;
+import java.net.URI;
+import java.net.URISyntaxException;
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.List;
+import java.util.concurrent.ExecutionException;
+import java.util.logging.Logger; 
+
+@Slf4j
+@LineMessageHandler
+public class LineBotController {
+	
+	Configs config=new Configs();
+	String name ="";
+    @Autowired
+    private LineMessagingClient lineMessagingClient;
+    // Create a Logger 
+    Logger logger 
+        = Logger.getLogger( 
+        		LineBotController.class.getName()); 
+
+    @EventMapping
+    public void handleTextMessage(MessageEvent<TextMessageContent> event) throws ClientProtocolException, IOException, ParseException, URISyntaxException {
+        logger.info(event.toString());
+    	//Core.getLogger(getActionName()).info(event.toString());
+        TextMessageContent message = event.getMessage();
+        handleTextContent(event.getReplyToken(), event, message);
+    }
+    
+    @EventMapping
+    public void handleFollow(FollowEvent event) throws ClientProtocolException, IOException {
+        logger.info(event.toString());
+    	//Core.getLogger(getActionName()).info(event.toString());
+        //TextMessageContent message = event.getMessage();
+        handleFollowUser(event.getReplyToken(), event);
+    }
+    
+    @EventMapping
+    public void handleUnfollowEvent(UnfollowEvent event) throws ClientProtocolException, IOException {
+        logger.info(event.toString());
+    	//Core.getLogger(getActionName()).info(event.toString());
+        //TextMessageContent message = event.getMessage();
+       // reply(event.getReplyToken(), event);
+    }
+    
+    
+    
+    @EventMapping
+    public void handleStickerMessage(MessageEvent<StickerMessageContent> event) {
+        logger.info(event.toString());
+//        StickerMessageContent message = event.getMessage();
+//        reply(event.getReplyToken(), new StickerMessage(
+//                message.getPackageId(), message.getStickerId()
+//        ));
+        //////ถ้าเป็น sticker ซื้อ พัง  sticker ฟรีได้  ก็ต้องดักหมดเลย 
+        this.replyText(event.getReplyToken(),new Configs().getAutoReplyMessage());
+    }
+    
+    @EventMapping
+    public void handleAudioMessage(MessageEvent<AudioMessageContent> event) {
+        logger.info(event.toString());
+        this.replyText(event.getReplyToken(),new Configs().getAutoReplyMessage());
+    }
+    
+    @EventMapping
+    public void handleImageMessage(MessageEvent<ImageMessageContent> event) {
+        logger.info(event.toString());
+        this.replyText(event.getReplyToken(),new Configs().getAutoReplyMessage());
+    }
+    
+    @EventMapping
+    public void handleVideoMessage(MessageEvent<VideoMessageContent> event) {
+        logger.info(event.toString());
+        this.replyText(event.getReplyToken(),new Configs().getAutoReplyMessage());
+    }
+    
+    
+   
+    
+    @EventMapping
+    public void handleLocationMessage(MessageEvent<LocationMessageContent> event) {
+        logger.info(event.toString());
+//        LocationMessageContent message = event.getMessage();
+//        reply(event.getReplyToken(), new LocationMessage(
+//                (message.getTitle() == null) ? "Location replied" : message.getTitle(),
+//                message.getAddress(),
+//                message.getLatitude(),
+//                message.getLongitude()
+//        ));
+        this.replyText(event.getReplyToken(),new Configs().getAutoReplyMessage());
+    }
+    
+    private void handleFollowUser(String replyToken, Event event)  throws ClientProtocolException, IOException {
+    	
+	
+		String web=new Configs().getWeb();
+		String deeplinklogin=new Configs().getDeepLinkLogin();
+    	String userId = event.getSource().getUserId();
+    	Callrest rest=new Callrest();
+    	
+    	String Token=rest.getTokenLogin(userId);
+    	
+    	lineMessagingClient.getProfile(userId)
+           .whenComplete((profile, throwable) -> {
+               if(throwable != null) {
+                   this.replyText(replyToken, throwable.getMessage());
+                   return;
+               }
+               name=profile.getDisplayName();
+           });
+    	
+    	String msg = "ยินดีต้อนรับคุณ "+name+"  (sparkling eyes)\r\n" + 
+    			"เข้าสู่ TestCPFMของซีพีเฟรชมาร์ทค่ะ\r\n" + 
+    			"\r\n" + 
+    			"นี่เป็นช่องทางการช่วยเหลือลูกค้า สำหรับติดตามข้อมูลคำสั่งซื้อ \r\n" + 
+    			"ราคาสินค้าและยอดวงเงิน\r\n" + 
+    			"\r\n" + 
+    			"ก่อนเริ่มใช้งานระบบกวนลงทะเบียนการใช้งาน "+web+deeplinklogin+Token;
+    		//	"ก่อนเริ่มใช้งานระบกวนลงทะเบียนการใช้งาน www.xxxx.cpf.co.th/"+Token;
+    	name="";
+    	this.replyText(replyToken,msg);
+    }
+
+
+    
+    
+
+    private void handleTextContent(String replyToken, Event event, 
+                                   TextMessageContent content) throws ClientProtocolException, IOException, ParseException, URISyntaxException {
+        String text = content.getText();
+        Callrest rest=new Callrest();
+        String userId = event.getSource().getUserId();
+        
+        String reply="";
+       // logger.info("Got text message from %s : %s", replyToken, text);
+
+        switch (text) {
+        
+            case "Profile": {
+                
+                if(userId != null) {
+                    lineMessagingClient.getProfile(userId)
+                            .whenComplete((profile, throwable) -> {
+                                if(throwable != null) {
+                                    this.replyText(replyToken, throwable.getMessage());
+                                    return;
+                                }
+                                this.reply(replyToken, Arrays.asList(
+                                        new TextMessage("Display name: " + 
+                                                        profile.getDisplayName()),
+                                        new TextMessage("Status message: " + 
+                                                        profile.getStatusMessage()),
+                                        new TextMessage("User ID: " + 
+                                                        profile.getUserId())
+                                ));
+                            });
+                }
+                break;
+            }
+            
+//            case "rest":{
+//            	
+//            	
+//            	rest.getCV("1");
+//                this.replyText(replyToken,"rest");
+//             
+//           	    break;
+//           }
+            case "ONLINE ORDER":{
+            	
+            	
+            	reply=rest.getOnlineOrder(userId);
+            	this.replyText(replyToken,reply);
+             
+           	    break;
+           }
+            case "ORDER STATUS":{
+            	
+            	
+            	reply=rest.getOrderStatus(userId);
+            	this.replyText(replyToken,reply);
+             
+           	    break;
+           }
+            case "PRODUCT PRICE":{
+            	
+            		if(userId != null) {
+            		
+            		String cvname=rest.getCVName(userId);
+            		String token =rest.getToken(userId);
+            		if(cvname!="ไม่พบข้อมูล" ||
+            		   cvname!="โปรดติดต่อพนักงานขาย" ||
+            		   cvname!="โปรดติดต่อพนักงานเนื่องจากไม่สามารถค้นหาชื่อได้" 
+            		) {
+            			this.reply(replyToken, new FlexMsgProductPrice().get(token,cvname,config.getLinkProduct()));
+            		}else {
+            			 this.replyText(replyToken,cvname);
+            			
+            		}
+            		
+            		
+            		
+            		
+            	}
+            	
+            	
+            	
+             
+           	    break;
+           }
+            case "CHECK BALANCE":{
+            	
+            	
+            	reply=rest.getCheckBalance(userId);
+            	
+            	this.replyText(replyToken,reply);
+             
+           	    break;
+           }
+            case "PAYMENT":{
+            	
+            	
+            	//reply=rest.getPayment(userId);
+//            	JSONObject obj1=new JSONObject();    
+//            	 JSONParser parser = new JSONParser();
+//            	 String items ="[{\r\n" + 
+//            	 		"            \"type\": \"action\",\r\n" + 
+//            	 		"            \"action\": {\r\n" + 
+//            	 		"              \"type\": \"cameraRoll\",\r\n" + 
+//            	 		"              \"label\": \"Camera Roll\"\r\n" + 
+//            	 		"            }\r\n" + 
+//            	 		"          },\r\n" + 
+//            	 		"          {\r\n" + 
+//            	 		"            \"type\": \"action\",\r\n" + 
+//            	 		"            \"action\": {\r\n" + 
+//            	 		"              \"type\": \"camera\",\r\n" + 
+//            	 		"              \"label\": \"Camera\"\r\n" + 
+//            	 		"            }\r\n" + 
+//            	 		"          }]";
+//            	 Object obj = parser.parse(items);
+//            	 JSONArray array = (JSONArray)obj;
+            	
+//            	JSONObject jo = new JSONObject(); 
+//            	jo.put("to",userId); 
+//            	 JSONArray ja = new JSONArray(); 
+//            	 Map m = new LinkedHashMap(3); 
+//            	  m.put("type", "text"); 
+//                  m.put("text", "กรุณาเลือกรูปแบบการจ่ายเงิน"); 
+//                  m.put("quickReply",);
+//                  
+//                  
+//                jo.put("messages",); 
+            	// reply=rest.getTest(userId);
+            	JSONObject items1 = new JSONObject(); 
+            	items1.put("type","action");
+                
+            	Map m = new LinkedHashMap(2); 
+              //  m.put("type", "cameraRoll"); 
+               // m.put("label", "Camera Roll");
+            	m.put("type","message");
+            	m.put("label","QR Code");
+            	m.put("text","QR Code");
+                items1.put("action",m);
+                
+                
+                m = new LinkedHashMap(2); 
+             //   m.put("type", "camera"); 
+                //m.put("label", "Camera"); 
+                m.put("type","message");
+            	m.put("label","Counter Service");
+            	m.put("text","Counter Service");
+                
+                JSONObject items2 = new JSONObject(); 
+                items2.put("type","action");
+                items2.put("action",m);
+                
+//                m = new LinkedHashMap(2); 
+//                m.put("type", "location"); 
+//                m.put("label", "Location"); 
+//                
+//                JSONObject items3 = new JSONObject(); 
+//                items3.put("type","action");
+//                items3.put("action",m);
+               
+                
+                JSONArray items = new JSONArray();
+                
+                
+                
+                
+                System.out.println(items1.toJSONString());
+                
+               
+                
+                 items.add(items1);
+                 items.add(items2);
+               //  items.add(items3);
+                 
+//                 System.out.println(items.toJSONString());
+//                 
+//                 JSONObject message1 = new JSONObject();
+//                 message1.put("type","text");
+//                 message1.put("text","กรุณาเลือกรูปแบบการจ่ายเงิน");
+//                 message1.put("quickreply",items);
+//                 
+//                 JSONArray messages = new JSONArray();
+//                 messages.add(message1);   
+//                 
+//                 JSONObject quickreply = new JSONObject();
+//                 quickreply.put("to",userId);
+//                 quickreply.put("messages",messages);
+//                 
+//                 System.out.println(quickreply.toJSONString());
+           //      QuickReplyBuilder q= QuickReply.builder();
+                 
+               
+               // this.replyText(replyToken,"555");
+               // this.reply((QuickReply)quickreply);
+//                List<QuickReplyItem> itemss = Arrays.asList(
+//                	      QuickReplyItem.builder()
+//                	             .action(CameraAction.withLabel("Camera Action Label"))
+//                	             .imageUrl(URI.create("https://example.com/image.png"))
+//                	             
+//                	             .build()
+//               	             ,
+//                	      QuickReplyItem.builder()
+//                	             .action(CameraRollAction.withLabel("Camera Roll Action Label"))
+//                	             .build()
+ //               	             ,
+//                	      QuickReplyItem.builder()
+//                	             .action(LocationAction.withLabel("Location Action"))
+//                	             .build(),
+//                	      QuickReplyItem.builder()
+//                	      .action()
+//                	      .build()
+//                	  );
+                
+                final QuickReply quickReply = QuickReply.items(items);
+
+                		
+                
+                		 this.reply(replyToken,TextMessage
+                                 .builder()
+                                 .text(new Configs().getTextPayment())
+                                 .quickReply(quickReply)
+                                 .build());
+                
+                
+                
+              
+           	    break;
+           }
+            case "CONTACT":{
+            	
+            	
+            	reply=rest.getContact(userId);
+                this.replyText(replyToken,reply);
+                
+           	    break;
+           }
+            case "QR Code":{
+            	
+            	DateTimeFormatter dtf = DateTimeFormatter.ofPattern("yyyy/MM/dd HH:mm:ss");  
+         	   LocalDateTime now = LocalDateTime.now();  
+         	   System.out.println("Start : "+dtf.format(now)); 
+            	
+            	ArrayList<Data> list=new ArrayList<Data>();
+            	
+            	//String list_=rest.getPaymentFileId(userId,2);
+            	String list_=rest.getTest(userId);
+            	String count_=list_.substring(list_.indexOf("=",list_.indexOf("count"))+1,list_.indexOf(";"));
+            	int count =Integer.parseInt(count_);
+            	System.out.println("count "+count);
+            	for(int i=1;i<=count;i++) {
+            		Data data = new Data();
+            		int start =list_.indexOf("<"+i+">");
+            		//int end =list_.indexOf("</"+i+">");
+            		
+            		String Detail=list_.substring(list_.indexOf(":",list_.indexOf("Detail",start))+1 ,  list_.indexOf(";",list_.indexOf("Detail",start)));
+            		String FileId=list_.substring(list_.indexOf(":",list_.indexOf("FileId",start))+1 ,  list_.indexOf(";",list_.indexOf("FileId",start)));
+            		
+            		data.setDetail(Detail);
+            		data.setFileId(FileId);
+            		list.add(data);
+            	}
+            	
+            	
+            	
+            	
+                this.reply(replyToken,new ListFlexPaymentQRCode().get(list));
+                
+                DateTimeFormatter dtf2 = DateTimeFormatter.ofPattern("yyyy/MM/dd HH:mm:ss");  
+          	   LocalDateTime now2 = LocalDateTime.now();  
+          	   System.out.println("End : "+dtf2.format(now2)); 
+                
+           	    break;
+           }
+            case "Counter Service":{
+            	DateTimeFormatter dtf = DateTimeFormatter.ofPattern("yyyy/MM/dd HH:mm:ss");  
+            	   LocalDateTime now = LocalDateTime.now();  
+            	   System.out.println("Start : "+dtf.format(now)); 
+            	
+            	String data=rest.getPaymentFileId(userId,1);
+            	System.out.println("Data :"+data);
+            	String invno="InvoiceNo";
+            	String amount="Amount";
+            	String duedate="DueDate";
+            	String fileid="FileId";
+            	
+            	String InvNo=data.substring(data.indexOf(":", data.indexOf(invno))+1,data.indexOf(";", data.indexOf(invno)));
+            	
+            	String Amount=data.substring(data.indexOf(":", data.indexOf(amount))+1,data.indexOf(";", data.indexOf(amount)));
+            	
+            	String DueDate=data.substring(data.indexOf(":", data.indexOf(duedate))+1,data.indexOf(";", data.indexOf(duedate)));
+            	
+            	String FileId=data.substring(data.indexOf(":", data.indexOf(fileid))+1,data.indexOf(";", data.indexOf(fileid)));
+            	
+            	System.out.println(invno+" "+InvNo);
+            	System.out.println(amount+" "+Amount);
+            	System.out.println(duedate+" "+DueDate);
+            	System.out.println(fileid+" "+FileId);
+            	
+            	int fileid_=Integer.parseInt(FileId);
+            	
+                //this.replyText(replyToken,"Counter Service");
+            	this.reply(replyToken,new FlexPaymentBarCode().get(InvNo,Amount,DueDate,fileid_));
+            	
+            	DateTimeFormatter dtf2 = DateTimeFormatter.ofPattern("yyyy/MM/dd HH:mm:ss");  
+         	   LocalDateTime now2 = LocalDateTime.now();  
+         	   System.out.println("End : "+dtf2.format(now2)); 
+            	
+           	    break;
+           }
+            case "aaa":{
+            	
+            	if(userId != null) {
+            		
+            		this.reply(replyToken, new CatalogueFlexMessageSupplier().get());
+            	}
+            	 break;
+            }
+            case "bbb":{
+            	
+            	if(userId != null) {
+            		
+            		this.reply(replyToken, new NewsFlexMessageSupplier().get());
+            	}
+            	 break;
+            }
+            case "ccc":{
+            	
+            	if(userId != null) {
+            		
+            		this.reply(replyToken, new ReceiptFlexMessageSupplier().get());
+            	}
+            	 break;
+            }
+            case "ddd":{
+            	
+            	if(userId != null) {
+            		
+            		
+            		this.reply(replyToken, new RestaurantFlexMessageSupplier().get());
+            	}
+            	 break;
+            }
+            case "eee":{
+            	
+            	if(userId != null) {
+            		
+            		this.reply(replyToken, new RestaurantMenuFlexMessageSupplier().get());
+            	}
+            	 break;
+            }
+            case "fff":{
+            	
+            	if(userId != null) {
+            		
+            		this.reply(replyToken, new TicketFlexMessageSupplier().get());
+            	}
+            	 break;
+            }
+            case "test":{
+            	
+//            	ArrayList<Data> list=new ArrayList<Data>();
+//            	
+//            	String list_=rest.getTest(userId);
+//            	String count_=list_.substring(list_.indexOf("=",list_.indexOf("count"))+1,list_.indexOf(";"));
+//            	int count =Integer.parseInt(count_);
+//            	System.out.println("count "+count);
+//            	for(int i=1;i<=count;i++) {
+//            		Data data = new Data();
+//            		int start =list_.indexOf("<"+i+">");
+//            		//int end =list_.indexOf("</"+i+">");
+//            		
+//            		String Detail=list_.substring(list_.indexOf(":",list_.indexOf("Detail",start))+1 ,  list_.indexOf(";",list_.indexOf("Detail",start)));
+//            		String FileId=list_.substring(list_.indexOf(":",list_.indexOf("FileId",start))+1 ,  list_.indexOf(";",list_.indexOf("FileId",start)));
+//            		
+//            		data.setDetail(Detail);
+//            		data.setFileId(FileId);
+//            		list.add(data);
+//            	}
+//            	int i=1;
+//            	for(Data a:list) {
+//            		System.out.println(i+" [ "+a.Detail+" , "+a.FileId+" ]");
+//            		i++;
+//            	}
+            	
+            	List<Message> list1=new ArrayList<Message>();
+            	FlexMessage f1=new CatalogueFlexMessageSupplier().get();
+            	FlexMessage f2=new CatalogueFlexMessageSupplier().get();
+            	FlexMessage f3=new CatalogueFlexMessageSupplier().get();
+            	
+            	list1.add(f1);
+            	list1.add(f2);
+            	list1.add(f3);
+            	
+            	this.reply(replyToken,list1);
+            	
+            	 break;
+            }
+
+            default:
+               // logger.info("Return echo message %s : %s", replyToken, text);
+                this.replyText(replyToken,new Configs().getWordUnknown());
+        }
+    }
+
+    
+
+	private void replyText(@NonNull  String replyToken, @NonNull String message) {
+        if(replyToken.isEmpty()) {
+            throw new IllegalArgumentException("replyToken is not empty");
+        }
+
+        if(message.length() > 1000) {
+            message = message.substring(0, 1000 - 2) + "...";
+        }
+        this.reply(replyToken, new TextMessage(message));
+    }
+
+    private void reply(@NonNull String replyToken, @NonNull Message message) {
+        reply(replyToken, Collections.singletonList(message));
+    }
+
+    private void reply(@NonNull String replyToken, @NonNull List<Message> messages) {
+        try {
+            BotApiResponse response = lineMessagingClient.replyMessage(
+                    new ReplyMessage(replyToken, messages)
+            ).get();
+        } catch (InterruptedException | ExecutionException e) {
+            throw new RuntimeException(e);
+        }
+    }
+    
+    
+    
+
+}
